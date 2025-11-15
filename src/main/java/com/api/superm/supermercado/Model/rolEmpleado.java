@@ -13,6 +13,6 @@ package com.api.superm.supermercado.Model;
 public enum rolEmpleado {
     
     CAJERO,
-    SUPERVISOR
+    SUPERVISOR;
    
 }

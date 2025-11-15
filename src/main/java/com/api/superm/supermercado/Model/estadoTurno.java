@@ -4,10 +4,12 @@
  */
 package com.api.superm.supermercado.Model;
 
+
 /**
  *
  * @author mariana01colorado
  */
+
 public enum estadoTurno {
 
     ESPERA,

@@ -39,7 +39,7 @@ public class turno {
 
     
     @ManyToOne
-    @JoinColumn(name = "empleado_id")
+    @JoinColumn(name = "empleado_id", nullable = true)
     private empleado empleado;
 
     public Long getId() {
@@ -113,6 +113,10 @@ public class turno {
 
     public void setEmpleado(empleado empleado) {
         this.empleado = empleado;
+    }
+
+    public void setAging(boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
     
     

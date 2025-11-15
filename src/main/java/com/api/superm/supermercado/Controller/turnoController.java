@@ -11,6 +11,7 @@ import com.api.superm.supermercado.Service.turnoService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +54,19 @@ public class turnoController {
         empleado empleado = empleadoRepository.findById(empleadoId)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
         return ResponseEntity.ok(turnoService.finalizar(id, empleado));
+    }
+    
+    @DeleteMapping("/eliminar/{turnoId}/{empleadoId}")
+    public ResponseEntity<?> eliminar(
+            @PathVariable Long turnoId,
+            @PathVariable Long empleadoId
+    ) {
+        empleado emp = empleadoRepository.findById(empleadoId)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        turnoService.eliminar(turnoId, emp);
+
+        return ResponseEntity.ok("Turno eliminado correctamente");
     }
     
 }

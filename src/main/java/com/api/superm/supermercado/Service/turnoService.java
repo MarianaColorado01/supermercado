@@ -8,9 +8,11 @@ import com.api.superm.supermercado.Model.atencion;
 import com.api.superm.supermercado.Model.categoriaPrioridad;
 import com.api.superm.supermercado.Model.empleado;
 import com.api.superm.supermercado.Model.estadoTurno;
+import com.api.superm.supermercado.Model.rolEmpleado;
 import com.api.superm.supermercado.Model.turno;
 import com.api.superm.supermercado.Repository.atencionRepository;
 import com.api.superm.supermercado.Repository.categoriaPrioridadRepository;
+import com.api.superm.supermercado.Repository.empleadoRepository;
 import com.api.superm.supermercado.Repository.turnoRepository;
 import jakarta.transaction.Transactional;
 import java.time.Duration;
@@ -65,12 +67,13 @@ public class turnoService {
         
         if(enEspera.isEmpty()) return Optional.empty();
         
-        for(turno t: enEspera){
-            long minutosEspera = Duration.between(t.getFechaCreacion(), LocalDateTime.now()).toMinutes();
-            if(t.getCategoria().getNombre().equalsIgnoreCase("Cliente normal") && minutosEspera > 7){
-                t.getCategoria().setNivel(2);
+        enEspera.forEach(t -> {
+            long minutos = Duration.between(t.getFechaCreacion(), LocalDateTime.now()).toMinutes();
+            if(t.getCategoria().getNombre().equalsIgnoreCase("Cliente normal")&& minutos>7){
+                t.setAging(true);
             }
-        }
+        
+        });
         
         Optional<turno> siguiente;
         if(contadorPrioritarios < 3){
@@ -97,25 +100,38 @@ public class turnoService {
     
     @Transactional
     public turno finalizar(Long id, empleado empleado){
-        turno turno = turnoRepository.findById(id)
+        turno t = turnoRepository.findById(id)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
         
-        turno.setEstado(estadoTurno.FINALIZADO);
-        turno.setFechaFinalizado(LocalDateTime.now());
-        turno.setTiempoEspera(Duration.between(turno.getFechaCreacion(), turno.getFechaLlamado()).toSeconds());
-        turnoRepository.save(turno);
+        t.setEstado(estadoTurno.FINALIZADO);
+        t.setFechaFinalizado(LocalDateTime.now());
+        t.setTiempoEspera(Duration.between(t.getFechaCreacion(), t.getFechaLlamado()).toSeconds());
+        t.setEmpleado(empleado);
+        turnoRepository.save(t);
         
-        atencion atencion = new atencion();
-        atencion.setTurno(turno);
-        atencion.setEmpleado(empleado);
-        atencion.setFechaInicio(turno.getFechaLlamado());
-        atencion.setFechaFin(turno.getFechaFinalizado());
-        atencion.setDuracionSegundos(
-                Duration.between(turno.getFechaLlamado(), turno.getFechaFinalizado()).toSeconds());
-        atencionRepository.save(atencion);
+        atencion ate = new atencion();
+        ate.setTurno(t);
+        ate.setEmpleado(empleado);
+        ate.setFechaInicio(t.getFechaLlamado());
+        ate.setFechaFin(t.getFechaFinalizado());
+        ate.setDuracionSegundos(
+                Duration.between(t.getFechaLlamado(), t.getFechaFinalizado()).toSeconds()
+        );
 
-        return turno;
+        atencionRepository.save(ate);
+
+        return t;
     }
    
-    
+    public void eliminar(Long idTurno, empleado empleadoAutenticado) {
+
+        turno t = turnoRepository.findById(idTurno)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno no encontrado"));
+
+        if (empleadoAutenticado.getRol() != rolEmpleado.SUPERVISOR) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo un supervisor puede eliminar turnos");
+        }
+
+        turnoRepository.delete(t);
+    }
 }

@@ -20,13 +20,13 @@ public class categoriaPrioridad {
     private Long id;
     
     @Column(nullable = false, length = 50)
-    private String nombre;          // "Adulto mayor", "Regular"
+    private String nombre;          
 
     @Column(nullable = false)
-    private Integer nivel;          // 1 = más alta prioridad
+    private Integer nivel;          
 
     @Column(nullable = false)
-    private Integer ratio = 3;      // cada cuanto se atiende un regular, es decir despues de 3 prioritarios
+    private Integer ratio = 3;      
 
     @Column(length = 150)
     private String descripcion;
